@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browser Tab Migrator</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <header>
+      <div class="logo-area">
+        <img src="../icons/icon-48.png" alt="Logo" class="logo">
+        <div class="title-group">
+          <h1>Tab Migrator</h1>
+          <div class="browser-badge" id="browser-badge">Detecting...</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="tabs-container">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="export">
+          <span class="tab-icon">📤</span> Export
+        </button>
+        <button class="tab-btn" data-tab="import">
+          <span class="tab-icon">📥</span> Import
+        </button>
+      </div>
+    </div>
+
+    <main class="content-area">
+      <!-- EXPORT SECTION -->
+      <section id="export-panel" class="panel active">
+        <div class="panel-intro">
+          <h2>Export Backup</h2>
+          <p>Save your current browser state to a universal JSON file.</p>
+        </div>
+
+        <div class="card">
+          <label class="section-label">Content to Save</label>
+          <div class="checkbox-group">
+            <label class="checkbox-wrap">
+              <input type="checkbox" id="ex-tabs" checked>
+              <div class="checkbox-custom"></div>
+              <div class="label-text">
+                <span class="primary">Tabs & Groups</span>
+                <span class="secondary">Save all open tabs and groupings</span>
+              </div>
+            </label>
+            <label class="checkbox-wrap">
+              <input type="checkbox" id="ex-bookmarks" checked>
+              <div class="checkbox-custom"></div>
+              <div class="label-text">
+                <span class="primary">Bookmarks</span>
+                <span class="secondary">Save all bookmark folders</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <label class="section-label">Filters & Options</label>
+          <div class="form-row">
+            <label for="ex-filter-domain">Domain Filter</label>
+            <input type="text" id="ex-filter-domain" placeholder="e.g. github.com, google.com">
+          </div>
+          <div class="checkbox-simple-row">
+            <label class="checkbox-simple">
+              <input type="checkbox" id="ex-filter-exclude-internal" checked>
+              <span class="checkmark-sm"></span>
+              Exclude internal pages (chrome://, about:)
+            </label>
+          </div>
+        </div>
+
+        <div class="actions-footer">
+          <button id="btn-export" class="btn-primary">Export Data</button>
+        </div>
+      </section>
+
+      <!-- IMPORT SECTION -->
+      <section id="import-panel" class="panel">
+        <div class="panel-intro">
+          <h2>Import Backup</h2>
+          <p>Restore tabs and sessions from a previous backup.</p>
+        </div>
+
+        <div class="card upload-card">
+          <div class="file-upload-box">
+            <input type="file" id="import-file" accept=".json">
+            <div class="upload-graphic">📂</div>
+            <div class="upload-text">Select Restore File</div>
+            <div class="upload-sub">.json files supported</div>
+          </div>
+          <div id="file-info" class="file-info hidden"></div>
+        </div>
+
+        <div class="card hidden" id="import-options">
+          <label class="section-label">Restore Options</label>
+          <div class="checkbox-group horizontal">
+            <label class="checkbox-wrap compact">
+              <input type="checkbox" id="im-tabs" checked>
+              <div class="checkbox-custom"></div>
+              <span class="primary">Tabs</span>
+            </label>
+            <label class="checkbox-wrap compact">
+              <input type="checkbox" id="im-bookmarks" checked>
+              <div class="checkbox-custom"></div>
+              <span class="primary">Bookmarks</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card hidden" id="import-strategies">
+          <div class="strategy-row">
+            <div class="strategy-col">
+              <label class="section-label">Tabs Destination</label>
+              <div class="radio-group-vertical">
+                <label class="radio-wrap">
+                  <input type="radio" name="tab-strategy" value="groups-to-workspaces" checked>
+                  <div class="radio-custom"></div>
+                  <span>Use Workspaces</span>
+                </label>
+                <label class="radio-wrap">
+                  <input type="radio" name="tab-strategy" value="groups-to-groups">
+                  <div class="radio-custom"></div>
+                  <span>Use Groups</span>
+                </label>
+              </div>
+            </div>
+            <div class="strategy-col">
+              <label class="section-label">Bookmarks Mode</label>
+              <div class="radio-group-vertical">
+                <label class="radio-wrap">
+                  <input type="radio" name="bm-strategy" value="merge" checked>
+                  <div class="radio-custom"></div>
+                  <span>Merge</span>
+                </label>
+                <label class="radio-wrap">
+                  <input type="radio" name="bm-strategy" value="folder">
+                  <div class="radio-custom"></div>
+                  <span>Subfolder</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions-footer">
+          <button id="btn-import" class="btn-primary" disabled>Begin Restore</button>
+          <button id="btn-cancel" class="btn-cancel hidden">Cancel</button>
+        </div>
+
+        <!-- Debug Tools -->
+        <div class="card" style="margin-top: 20px; border-color: #3b82f640;">
+          <label class="section-label" style="color: #60a5fa;">Developer Tools</label>
+          <button id="btn-test-group" class="btn-cancel" style="color: #60a5fa; border-color: #60a5fa;">Test Group
+            Creation</button>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <span id="status-msg">Ready</span>
+        <span id="progress-text" class="hidden"></span>
+      </div>
+      <div id="progress-bar" class="progress-bar hidden">
+        <div class="fill"></div>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+
+</html>
