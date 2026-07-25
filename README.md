@@ -62,7 +62,7 @@
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/chromium-tab-migrator.git
+   git clone https://github.com/rennerdo30/chromium-tab-migrator.git
    ```
 
 2. Load the extension in your browser:
