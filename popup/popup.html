@@ -4,111 +4,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Browser Tab Migrator</title>
+  <title>Tab Migrator</title>
+  <!-- Applies the stored theme before first paint; must stay non-deferred and above the stylesheet. -->
+  <script src="theme.js"></script>
   <link rel="stylesheet" href="popup.css">
 </head>
 
 <body>
   <div class="app-container">
-    <header>
-      <div class="logo-area">
-        <img src="../icons/icon-48.png" alt="Logo" class="logo">
-        <div class="title-group">
-          <h1>Tab Migrator</h1>
-          <div class="browser-badge" id="browser-badge">Detecting...</div>
-        </div>
+    <header class="app-header">
+      <img src="../icons/icon-48.png" alt="" class="app-logo" width="32" height="32">
+      <div class="title-group">
+        <h1>Tab Migrator</h1>
+        <p class="browser-badge" id="browser-badge">Detecting browser…</p>
       </div>
+      <button type="button" id="btn-theme" class="btn-icon" aria-label="Switch to light theme">
+        <svg class="icon icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+        </svg>
+        <svg class="icon icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4.2" />
+          <path d="M12 2.6v2.2M12 19.2v2.2M4.2 12H2M22 12h-2.2M6.5 6.5 4.9 4.9M19.1 19.1l-1.6-1.6M17.5 6.5l1.6-1.6M4.9 19.1l1.6-1.6" />
+        </svg>
+      </button>
     </header>
 
     <div class="tabs-container">
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="export">
-          <span class="tab-icon">📤</span> Export
+      <div class="tabs" role="tablist" aria-label="Migration mode">
+        <button type="button" class="tab-btn active" id="tab-export" role="tab" data-tab="export" aria-selected="true"
+          aria-controls="export-panel">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 16V4M8 7.5 12 3.5l4 4" />
+            <path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" />
+          </svg>
+          Export
         </button>
-        <button class="tab-btn" data-tab="import">
-          <span class="tab-icon">📥</span> Import
+        <button type="button" class="tab-btn" id="tab-import" role="tab" data-tab="import" aria-selected="false"
+          aria-controls="import-panel" tabindex="-1">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 3.5v12M8 12l4 4 4-4" />
+            <path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" />
+          </svg>
+          Import
         </button>
       </div>
     </div>
 
     <main class="content-area">
       <!-- EXPORT SECTION -->
-      <section id="export-panel" class="panel active">
+      <section id="export-panel" class="panel active" role="tabpanel" aria-labelledby="tab-export">
         <div class="panel-intro">
-          <h2>Export Backup</h2>
-          <p>Save your current browser state to a universal JSON file.</p>
+          <h2>Export backup</h2>
+          <p>Save your current browser state to a portable JSON file.</p>
         </div>
 
         <div class="card">
-          <label class="section-label">Content to Save</label>
-          <div class="checkbox-group">
+          <h3 class="section-label" id="export-content-label">Content to save</h3>
+          <div class="checkbox-group" role="group" aria-labelledby="export-content-label">
             <label class="checkbox-wrap">
-              <input type="checkbox" id="ex-tabs" checked>
-              <div class="checkbox-custom"></div>
-              <div class="label-text">
-                <span class="primary">Tabs & Groups</span>
-                <span class="secondary">Save all open tabs and groupings</span>
-              </div>
+              <input type="checkbox" id="ex-tabs" class="control-input" checked>
+              <span class="checkbox-custom" aria-hidden="true"></span>
+              <span class="label-text">
+                <span class="primary">Tabs &amp; groups</span>
+                <span class="secondary">All open tabs, with their grouping preserved</span>
+              </span>
             </label>
             <label class="checkbox-wrap">
-              <input type="checkbox" id="ex-bookmarks" checked>
-              <div class="checkbox-custom"></div>
-              <div class="label-text">
+              <input type="checkbox" id="ex-bookmarks" class="control-input" checked>
+              <span class="checkbox-custom" aria-hidden="true"></span>
+              <span class="label-text">
                 <span class="primary">Bookmarks</span>
-                <span class="secondary">Save all bookmark folders</span>
-              </div>
+                <span class="secondary">The complete bookmark folder tree</span>
+              </span>
             </label>
           </div>
+          <p id="export-empty-hint" class="inline-hint is-warning hidden" role="status">
+            Pick at least one kind of content to export.
+          </p>
         </div>
 
         <div class="card">
-          <label class="section-label">Filters & Options</label>
+          <h3 class="section-label">Filters</h3>
           <div class="form-row">
-            <label for="ex-filter-domain">Domain Filter</label>
-            <input type="text" id="ex-filter-domain" placeholder="e.g. github.com, google.com">
+            <label for="ex-filter-domain">Domain filter</label>
+            <input type="text" id="ex-filter-domain" placeholder="github.com, wikipedia.org"
+              aria-describedby="ex-filter-domain-hint" autocomplete="off" spellcheck="false">
+            <p class="field-hint" id="ex-filter-domain-hint">
+              Comma-separated. Leave empty to export every tab.
+            </p>
           </div>
-          <div class="checkbox-simple-row">
-            <label class="checkbox-simple">
-              <input type="checkbox" id="ex-filter-exclude-internal" checked>
-              <span class="checkmark-sm"></span>
-              Exclude internal pages (chrome://, about:)
-            </label>
-          </div>
+          <label class="checkbox-simple">
+            <input type="checkbox" id="ex-filter-exclude-internal" class="control-input" checked>
+            <span class="checkmark-sm" aria-hidden="true"></span>
+            <span>Skip internal pages (chrome://, about:)</span>
+          </label>
         </div>
 
         <div class="actions-footer">
-          <button id="btn-export" class="btn-primary">Export Data</button>
+          <button type="button" id="btn-export" class="btn-primary">Export data</button>
         </div>
       </section>
 
       <!-- IMPORT SECTION -->
-      <section id="import-panel" class="panel">
+      <section id="import-panel" class="panel" role="tabpanel" aria-labelledby="tab-import" hidden>
         <div class="panel-intro">
-          <h2>Import Backup</h2>
-          <p>Restore tabs and sessions from a previous backup.</p>
+          <h2>Import backup</h2>
+          <p>Restore tabs, groups and bookmarks from a backup file.</p>
         </div>
 
         <div class="card upload-card">
-          <div class="file-upload-box">
-            <input type="file" id="import-file" accept=".json">
-            <div class="upload-graphic">📂</div>
-            <div class="upload-text">Select Restore File</div>
-            <div class="upload-sub">.json files supported</div>
-          </div>
-          <div id="file-info" class="file-info hidden"></div>
+          <label class="file-upload-box" for="import-file">
+            <input type="file" id="import-file" accept="application/json,.json">
+            <svg class="upload-graphic" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M4.5 19.5A1.5 1.5 0 0 1 3 18V6.2a1.5 1.5 0 0 1 1.5-1.5h4L10 7h9a1.5 1.5 0 0 1 1.5 1.5V18a1.5 1.5 0 0 1-1.5 1.5Z" />
+              <path d="M12 15.5v-5M9.8 12.4 12 10.2l2.2 2.2" />
+            </svg>
+            <span class="upload-text">Choose a backup file</span>
+            <span class="upload-sub">JSON exported by this extension</span>
+          </label>
+          <p id="file-info" class="inline-hint hidden" role="status"></p>
         </div>
 
         <div class="card hidden" id="import-options">
-          <label class="section-label">Restore Options</label>
-          <div class="checkbox-group horizontal">
+          <h3 class="section-label" id="import-content-label">What to restore</h3>
+          <div class="checkbox-group horizontal" role="group" aria-labelledby="import-content-label">
             <label class="checkbox-wrap compact">
-              <input type="checkbox" id="im-tabs" checked>
-              <div class="checkbox-custom"></div>
+              <input type="checkbox" id="im-tabs" class="control-input" checked>
+              <span class="checkbox-custom" aria-hidden="true"></span>
               <span class="primary">Tabs</span>
             </label>
             <label class="checkbox-wrap compact">
-              <input type="checkbox" id="im-bookmarks" checked>
-              <div class="checkbox-custom"></div>
+              <input type="checkbox" id="im-bookmarks" class="control-input" checked>
+              <span class="checkbox-custom" aria-hidden="true"></span>
               <span class="primary">Bookmarks</span>
             </label>
           </div>
@@ -116,59 +144,55 @@
 
         <div class="card hidden" id="import-strategies">
           <div class="strategy-row">
-            <div class="strategy-col">
-              <label class="section-label">Tabs Destination</label>
+            <fieldset class="strategy-col">
+              <legend class="section-label">Tabs destination</legend>
               <div class="radio-group-vertical">
-                <label class="radio-wrap">
-                  <input type="radio" name="tab-strategy" value="groups-to-workspaces" checked>
-                  <div class="radio-custom"></div>
-                  <span>Use Workspaces</span>
+                <label class="radio-wrap" id="strategy-workspaces">
+                  <input type="radio" name="tab-strategy" class="control-input" value="groups-to-workspaces" checked>
+                  <span class="radio-custom" aria-hidden="true"></span>
+                  <span>Workspaces</span>
                 </label>
-                <label class="radio-wrap">
-                  <input type="radio" name="tab-strategy" value="groups-to-groups">
-                  <div class="radio-custom"></div>
-                  <span>Use Groups</span>
+                <label class="radio-wrap" id="strategy-groups">
+                  <input type="radio" name="tab-strategy" class="control-input" value="groups-to-groups">
+                  <span class="radio-custom" aria-hidden="true"></span>
+                  <span>Tab groups</span>
                 </label>
               </div>
-            </div>
-            <div class="strategy-col">
-              <label class="section-label">Bookmarks Mode</label>
+              <p class="field-hint" id="strategy-hint"></p>
+            </fieldset>
+            <fieldset class="strategy-col">
+              <legend class="section-label">Bookmarks mode</legend>
               <div class="radio-group-vertical">
                 <label class="radio-wrap">
-                  <input type="radio" name="bm-strategy" value="merge" checked>
-                  <div class="radio-custom"></div>
+                  <input type="radio" name="bm-strategy" class="control-input" value="merge" checked>
+                  <span class="radio-custom" aria-hidden="true"></span>
                   <span>Merge</span>
                 </label>
                 <label class="radio-wrap">
-                  <input type="radio" name="bm-strategy" value="folder">
-                  <div class="radio-custom"></div>
-                  <span>Subfolder</span>
+                  <input type="radio" name="bm-strategy" class="control-input" value="folder">
+                  <span class="radio-custom" aria-hidden="true"></span>
+                  <span>Into a subfolder</span>
                 </label>
               </div>
-            </div>
+              <p class="field-hint">Merge keeps what you have and adds the backup on top.</p>
+            </fieldset>
           </div>
         </div>
 
         <div class="actions-footer">
-          <button id="btn-import" class="btn-primary" disabled>Begin Restore</button>
-          <button id="btn-cancel" class="btn-cancel hidden">Cancel</button>
-        </div>
-
-        <!-- Debug Tools -->
-        <div class="card" style="margin-top: 20px; border-color: #3b82f640;">
-          <label class="section-label" style="color: #60a5fa;">Developer Tools</label>
-          <button id="btn-test-group" class="btn-cancel" style="color: #60a5fa; border-color: #60a5fa;">Test Group
-            Creation</button>
+          <button type="button" id="btn-import" class="btn-primary" disabled>Start restore</button>
+          <button type="button" id="btn-cancel" class="btn-cancel hidden">Cancel restore</button>
         </div>
       </section>
     </main>
 
-    <footer>
+    <footer class="app-footer">
       <div class="footer-content">
-        <span id="status-msg">Ready</span>
+        <span id="status-msg" role="status">Ready</span>
         <span id="progress-text" class="hidden"></span>
       </div>
-      <div id="progress-bar" class="progress-bar hidden">
+      <div id="progress-bar" class="progress-bar hidden" role="progressbar" aria-label="Restore progress"
+        aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
         <div class="fill"></div>
       </div>
     </footer>
